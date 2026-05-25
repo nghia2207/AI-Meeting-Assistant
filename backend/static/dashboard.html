@@ -1,0 +1,529 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI Meeting Assistant - Dashboard</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    *{box-sizing:border-box;margin:0;padding:0}
+    :root{
+      --primary:#0d9488;--primary-hover:#0f766e;--primary-light:#ccfbf1;--primary-soft:#f0fdfa;
+      --accent:#6366f1;--accent-light:#e0e7ff;
+      --success:#059669;--success-bg:#d1fae5;--success-border:#a7f3d0;
+      --warning:#d97706;--warning-bg:#fef3c7;--warning-border:#fde68a;
+      --error:#dc2626;--error-bg:#fee2e2;--error-border:#fecaca;
+      --bg:#f8fafb;--bg-card:#ffffff;--bg-soft:#f1f5f9;--bg-hover:#e2e8f0;
+      --text:#0f172a;--text-secondary:#475569;--text-muted:#94a3b8;
+      --border:#e2e8f0;--border-hover:#cbd5e1;
+      --shadow-sm:0 1px 2px rgba(0,0,0,.04);--shadow:0 2px 8px rgba(0,0,0,.06);--shadow-lg:0 8px 24px rgba(0,0,0,.1);
+      --radius:12px;--radius-sm:8px;--radius-lg:16px;
+    }
+    body{font-family:'Inter',system-ui,-apple-system,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;-webkit-font-smoothing:antialiased}
+
+    /* ═══ HEADER ═══ */
+    .header{
+      background:rgba(255,255,255,.82);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);
+      border-bottom:1px solid var(--border);padding:14px 28px;
+      display:flex;align-items:center;justify-content:space-between;
+      position:sticky;top:0;z-index:100;
+    }
+    .header-left{display:flex;align-items:center;gap:14px}
+    .logo{
+      width:42px;height:42px;
+      background:linear-gradient(135deg,var(--primary),var(--accent));
+      border-radius:var(--radius);display:flex;align-items:center;justify-content:center;
+      color:#fff;font-size:20px;box-shadow:0 2px 8px rgba(13,148,136,.3);
+      transition:transform .2s;
+    }
+    .logo:hover{transform:scale(1.05) rotate(-2deg)}
+    .header h1{font-size:20px;font-weight:700;letter-spacing:-.3px}
+    .header-right{display:flex;gap:10px}
+
+    /* ═══ BUTTONS ═══ */
+    .btn{
+      padding:9px 18px;border:none;border-radius:var(--radius-sm);
+      font-size:14px;font-weight:600;font-family:inherit;cursor:pointer;
+      transition:all .2s ease;display:inline-flex;align-items:center;gap:6px;
+    }
+    .btn-primary{background:var(--primary);color:#fff;box-shadow:0 2px 6px rgba(13,148,136,.25)}
+    .btn-primary:hover{background:var(--primary-hover);transform:translateY(-1px);box-shadow:0 4px 12px rgba(13,148,136,.3)}
+    .btn-primary:active{transform:translateY(0)}
+    .btn-secondary{background:var(--bg-soft);color:var(--text-secondary);border:1px solid var(--border)}
+    .btn-secondary:hover{background:var(--bg-hover);border-color:var(--border-hover);color:var(--text)}
+    .main{max-width:1200px;margin:0 auto;padding:28px 24px}
+
+    /* ═══ STATS ═══ */
+    .stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px;margin-bottom:28px}
+    .stat-card{
+      background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);
+      padding:22px;box-shadow:var(--shadow-sm);transition:all .25s ease;position:relative;overflow:hidden;
+    }
+    .stat-card::before{
+      content:'';position:absolute;top:0;left:0;right:0;height:3px;border-radius:var(--radius) var(--radius) 0 0;
+      transition:height .25s;
+    }
+    .stat-card.primary::before{background:linear-gradient(90deg,var(--primary),var(--accent))}
+    .stat-card.success::before{background:var(--success)}
+    .stat-card.warning::before{background:var(--warning)}
+    .stat-card:hover{transform:translateY(-2px);box-shadow:var(--shadow)}
+    .stat-label{font-size:12px;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px}
+    .stat-value{font-size:32px;font-weight:700;letter-spacing:-.5px}
+    .stat-card.primary .stat-value{color:var(--primary)}
+    .stat-card.success .stat-value{color:var(--success)}
+    .stat-card.warning .stat-value{color:var(--warning)}
+
+    /* ═══ SECTIONS ═══ */
+    .quick-test,.record-section,.section{
+      background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius-lg);
+      padding:24px;margin-bottom:24px;box-shadow:var(--shadow-sm);transition:box-shadow .25s;
+    }
+    .quick-test:hover,.record-section:hover,.section:hover{box-shadow:var(--shadow)}
+    .quick-test h2,.record-section h2,.section h2{font-size:16px;font-weight:700;margin-bottom:18px;display:flex;align-items:center;gap:8px}
+
+    /* ═══ TEST AI ═══ */
+    .test-form{display:flex;flex-direction:column;gap:14px}
+    .test-form textarea{
+      width:100%;padding:14px 16px;border:1.5px solid var(--border);border-radius:var(--radius-sm);
+      font-size:14px;font-family:inherit;resize:vertical;min-height:110px;
+      background:var(--bg);color:var(--text);transition:all .2s;line-height:1.6;
+    }
+    .test-form textarea:focus{outline:none;border-color:var(--primary);box-shadow:0 0 0 3px rgba(13,148,136,.12);background:#fff}
+    .test-form textarea::placeholder{color:var(--text-muted)}
+    .test-form .btn-group{display:flex;gap:12px}
+    .test-form .btn-group .btn{flex:1;padding:12px 18px;font-size:15px;justify-content:center}
+    .test-result{margin-top:16px;padding:16px 18px;border-radius:var(--radius-sm);display:none;font-size:14px;line-height:1.7;animation:fadeSlideIn .3s ease}
+    .test-result.show{display:block}
+    .test-result.success{background:var(--success-bg);border:1px solid var(--success-border);color:#065f46}
+    .test-result.error{background:var(--error-bg);border:1px solid var(--error-border);color:#991b1b}
+    .test-result.loading{background:var(--warning-bg);border:1px solid var(--warning-border);color:#92400e}
+
+    /* ═══ RECORDING ═══ */
+    .record-controls{display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+    .record-btn{
+      padding:12px 24px;border:none;border-radius:var(--radius-sm);
+      font-size:14px;font-weight:600;font-family:inherit;cursor:pointer;
+      display:flex;align-items:center;gap:8px;transition:all .2s;
+    }
+    .record-btn.start{background:var(--error);color:#fff;box-shadow:0 2px 8px rgba(220,38,38,.25)}
+    .record-btn.start:hover{background:#b91c1c;transform:translateY(-1px)}
+    .record-btn.stop{background:var(--text-muted);color:#fff}
+    .record-btn.stop:hover:not(:disabled){background:var(--text-secondary)}
+    .record-btn:disabled{opacity:.45;cursor:not-allowed;transform:none!important}
+    .record-timer{font-size:15px;font-weight:600;color:var(--text-secondary);font-variant-numeric:tabular-nums}
+
+    /* ═══ MEETINGS ═══ */
+    .section-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px}
+    .meeting-grid{display:grid;gap:12px}
+    .meeting-card{
+      border:1px solid var(--border);border-radius:var(--radius);padding:18px;
+      cursor:pointer;transition:all .25s ease;background:var(--bg-card);
+    }
+    .meeting-card:hover{border-color:var(--primary);box-shadow:0 4px 16px rgba(13,148,136,.08);transform:translateY(-1px)}
+    .meeting-card-header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:10px}
+    .meeting-title{font-size:15px;font-weight:600;margin-bottom:4px;color:var(--text)}
+    .meeting-meta{font-size:12px;color:var(--text-muted)}
+    .meeting-status{padding:4px 12px;border-radius:9999px;font-size:11px;font-weight:600;letter-spacing:.3px}
+    .meeting-status.completed{background:var(--success-bg);color:#065f46}
+    .meeting-status.processing{background:var(--warning-bg);color:#92400e}
+    .meeting-status.recording{background:var(--error-bg);color:#991b1b}
+    .meeting-status.failed{background:var(--error-bg);color:#991b1b}
+    .meeting-preview{font-size:13px;color:var(--text-secondary);line-height:1.6}
+
+    /* ═══ MODAL ═══ */
+    .modal-overlay{
+      display:none;position:fixed;top:0;left:0;right:0;bottom:0;
+      background:rgba(15,23,42,.45);backdrop-filter:blur(4px);
+      z-index:1000;align-items:center;justify-content:center;padding:24px;
+    }
+    .modal-overlay.active{display:flex;animation:fadeIn .2s ease}
+    .modal{
+      background:var(--bg-card);border-radius:var(--radius-lg);width:100%;max-width:900px;
+      max-height:90vh;overflow:hidden;display:flex;flex-direction:column;
+      box-shadow:var(--shadow-lg);animation:slideUp .3s ease;
+    }
+    .modal-header{padding:22px 24px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+    .modal-header h2{font-size:18px;font-weight:700}
+    .modal-close{
+      width:34px;height:34px;border:none;background:var(--bg-soft);border-radius:var(--radius-sm);
+      cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:18px;
+      color:var(--text-secondary);transition:all .2s;
+    }
+    .modal-close:hover{background:var(--bg-hover);color:var(--text)}
+    .modal-body{padding:24px;overflow-y:auto;flex:1}
+    .detail-section{margin-bottom:28px}
+    .detail-section h3{
+      font-size:12px;font-weight:700;color:var(--text-muted);text-transform:uppercase;
+      letter-spacing:.8px;margin-bottom:14px;display:flex;align-items:center;gap:6px;
+    }
+    .transcript-box{background:var(--bg);border:1px solid var(--border);border-radius:var(--radius-sm);padding:18px;font-size:14px;line-height:1.8;white-space:pre-wrap}
+    .summary-box{background:var(--primary-soft);border:1px solid var(--primary-light);border-radius:var(--radius-sm);padding:18px;font-size:14px;line-height:1.8;color:#134e4a}
+    .task-list{display:grid;gap:10px}
+    .task-item{
+      background:var(--bg);border:1px solid var(--border);border-radius:var(--radius-sm);
+      padding:16px;display:flex;gap:14px;transition:all .2s;
+    }
+    .task-item:hover{border-color:var(--primary);background:var(--primary-soft)}
+    .task-icon{
+      width:34px;height:34px;background:linear-gradient(135deg,var(--success),#34d399);
+      border-radius:var(--radius-sm);display:flex;align-items:center;justify-content:center;
+      color:#fff;font-size:14px;font-weight:700;flex-shrink:0;
+    }
+    .task-content{flex:1}
+    .task-name{font-size:14px;font-weight:600;margin-bottom:4px}
+    .task-meta{font-size:12px;color:var(--text-muted)}
+
+    /* ═══ EMPTY & LOADING ═══ */
+    .empty-state{text-align:center;padding:48px 24px;color:var(--text-muted)}
+    .empty-state svg{width:56px;height:56px;margin-bottom:14px;opacity:.35}
+    .empty-state h3{font-size:16px;font-weight:600;margin-bottom:6px;color:var(--text-secondary)}
+    .empty-state p{font-size:14px}
+    .loading{display:flex;align-items:center;justify-content:center;padding:48px}
+    .spinner{width:28px;height:28px;border:3px solid var(--border);border-top-color:var(--primary);border-radius:50%;animation:spin .8s linear infinite}
+
+    /* ═══ ANIMATIONS ═══ */
+    @keyframes spin{to{transform:rotate(360deg)}}
+    @keyframes fadeIn{from{opacity:0}to{opacity:1}}
+    @keyframes slideUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+    @keyframes fadeSlideIn{from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:translateY(0)}}
+
+    /* ═══ RESPONSIVE ═══ */
+    @media(max-width:640px){
+      .main{padding:16px}
+      .header{padding:12px 16px}
+      .test-form .btn-group{flex-direction:column}
+      .record-controls{flex-direction:column;align-items:stretch}
+      .stat-value{font-size:26px}
+    }
+  </style>
+</head>
+<body>
+  <header class="header">
+    <div class="header-left">
+      <div class="logo">🎙️</div>
+      <h1>AI Meeting Assistant</h1>
+    </div>
+    <div class="header-right">
+      <button class="btn btn-secondary" onclick="loadMeetings()">🔄 Refresh</button>
+    </div>
+  </header>
+
+  <main class="main">
+    <!-- Quick Test AI -->
+    <div class="quick-test">
+      <h2>🧪 Quick Test AI</h2>
+      <div class="test-form">
+        <textarea id="testText" placeholder="Nhập nội dung cuộc họp tiếng Việt...&#10;Ví dụ: Cuoc hop hom nay thao luan ve du an. Anh Minh se hoan thanh UI truoc ngay 25. Chi Linh can hoan thanh backend API."></textarea>
+        <div class="btn-group">
+          <button class="btn btn-primary" onclick="testAI()">🚀 Test AI</button>
+          <button class="btn btn-secondary" onclick="clearTest()">🗑️ Clear</button>
+        </div>
+      </div>
+      <div class="test-result" id="testResult"></div>
+    </div>
+
+    <!-- Microphone Recording -->
+    <div class="record-section">
+      <h2>🎤 Record from Microphone</h2>
+      <div class="record-controls">
+        <button class="record-btn start" id="recordBtn" onclick="toggleRecording()">
+          <span>⏺</span> Start Recording
+        </button>
+        <button class="record-btn stop" id="stopBtn" onclick="stopRecording()" disabled>
+          <span>⏹️</span> Stop & Process
+        </button>
+        <span class="record-timer" id="recordTimer">00:00</span>
+      </div>
+      <p style="font-size: 13px; color: var(--text-muted); margin-top: 14px; line-height: 1.5;">
+        Lưu ý: Sử dụng microphone sẽ ghi âm giọng bạn nói. Để ghi âm cuộc họp Google Meet, hãy sử dụng Chrome Extension.
+      </p>
+    </div>
+
+    <!-- Stats -->
+    <div class="stats">
+      <div class="stat-card primary">
+        <div class="stat-label">Total Meetings</div>
+        <div class="stat-value" id="totalMeetings">0</div>
+      </div>
+      <div class="stat-card success">
+        <div class="stat-label">Completed</div>
+        <div class="stat-value" id="completedMeetings">0</div>
+      </div>
+      <div class="stat-card warning">
+        <div class="stat-label">Processing</div>
+        <div class="stat-value" id="processingMeetings">0</div>
+      </div>
+    </div>
+
+    <!-- Meeting List -->
+    <div class="section">
+      <div class="section-header">
+        <h2>📋 Recent Meetings</h2>
+      </div>
+      <div class="meeting-grid" id="meetingList">
+        <div class="loading"><div class="spinner"></div></div>
+      </div>
+    </div>
+  </main>
+
+  <!-- Meeting Detail Modal -->
+  <div class="modal-overlay" id="modal">
+    <div class="modal">
+      <div class="modal-header">
+        <h2 id="modalTitle">Meeting Details</h2>
+        <button class="modal-close" onclick="closeModal()">✕</button>
+      </div>
+      <div class="modal-body" id="modalBody"></div>
+    </div>
+  </div>
+
+  <script>
+    const API_URL = 'http://localhost:3000';
+
+    // ===== TEST AI =====
+    async function testAI() {
+      const text = document.getElementById('testText').value.trim();
+      if (!text) {
+        showTestResult('Vui lòng nhập nội dung cuộc họp!', 'error');
+        return;
+      }
+
+      showTestResult('⏳ Đang xử lý AI... (có thể mất 20-30 giây do free tier)', 'loading');
+
+      try {
+        const response = await fetch(`${API_URL}/api/meetings/test-ai`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ text })
+        });
+        const data = await response.json();
+
+        if (data.summary) {
+          let html = '<strong>✅ AI xử lý thành công!</strong><br><br>';
+          html += '<strong>📝 Tóm tắt:</strong><br>' + data.summary.replace(/\n/g, '<br>') + '<br><br>';
+          if (data.tasks && data.tasks.length > 0) {
+            html += '<strong>✅ Action Items:</strong><br>';
+            data.tasks.forEach(t => {
+              html += `• <strong>${t.taskName || t.task_name || JSON.stringify(t)}</strong>`;
+              if (t.assignee) html += ` — 👤 ${t.assignee}`;
+              if (t.deadline) html += ` — 📅 ${t.deadline}`;
+              html += '<br>';
+            });
+          }
+          showTestResult(html, 'success', true);
+          loadMeetings();
+        } else {
+          showTestResult('Lỗi: ' + (data.error || 'Unknown error'), 'error');
+        }
+      } catch (error) {
+        showTestResult('Lỗi kết nối: ' + error.message, 'error');
+      }
+    }
+
+    function showTestResult(message, type, isHtml = false) {
+      const result = document.getElementById('testResult');
+      result.className = 'test-result show ' + type;
+      if (isHtml) {
+        result.innerHTML = message;
+      } else {
+        result.textContent = message;
+      }
+    }
+
+    function clearTest() {
+      document.getElementById('testText').value = '';
+      document.getElementById('testResult').className = 'test-result';
+    }
+
+    // ===== MICROPHONE RECORDING =====
+    let mediaRecorder = null;
+    let audioChunks = [];
+    let isRecording = false;
+    let recordStartTime = null;
+    let timerInterval = null;
+
+    async function toggleRecording() {
+      if (!isRecording) {
+        try {
+          const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+
+          let mimeType = 'audio/webm';
+          if (MediaRecorder.isTypeSupported('audio/webm;codecs=opus')) {
+            mimeType = 'audio/webm;codecs=opus';
+          }
+
+          mediaRecorder = new MediaRecorder(stream, { mimeType, audioBitsPerSecond: 128000 });
+          audioChunks = [];
+
+          mediaRecorder.ondataavailable = (event) => {
+            if (event.data.size > 0) audioChunks.push(event.data);
+          };
+
+          mediaRecorder.onstop = async () => {
+            const blob = new Blob(audioChunks, { type: mimeType });
+            await uploadAudio(blob);
+            stream.getTracks().forEach(t => t.stop());
+          };
+
+          mediaRecorder.start(1000);
+          isRecording = true;
+          recordStartTime = Date.now();
+
+          document.getElementById('recordBtn').disabled = true;
+          document.getElementById('stopBtn').disabled = false;
+          document.getElementById('recordBtn').innerHTML = '<span>⏺</span> Recording...';
+
+          timerInterval = setInterval(updateTimer, 1000);
+        } catch (err) {
+          alert('Cannot access microphone: ' + err.message);
+        }
+      }
+    }
+
+    function stopRecording() {
+      if (mediaRecorder && isRecording) {
+        mediaRecorder.stop();
+        isRecording = false;
+        clearInterval(timerInterval);
+
+        document.getElementById('recordBtn').disabled = false;
+        document.getElementById('stopBtn').disabled = true;
+        document.getElementById('recordBtn').innerHTML = '<span>⏺</span> Start Recording';
+      }
+    }
+
+    function updateTimer() {
+      const elapsed = Math.floor((Date.now() - recordStartTime) / 1000);
+      const mins = String(Math.floor(elapsed / 60)).padStart(2, '0');
+      const secs = String(elapsed % 60).padStart(2, '0');
+      document.getElementById('recordTimer').textContent = `${mins}:${secs}`;
+    }
+
+    async function uploadAudio(blob) {
+      const formData = new FormData();
+      formData.append('audio', blob, 'meeting.webm');
+      formData.append('meetingId', 'mic-' + Date.now());
+      formData.append('title', 'Mic Recording - ' + new Date().toLocaleString('vi-VN'));
+
+      showTestResult('⏳ Đang upload và xử lý audio... (Whisper → Gemini, có thể mất 30-60 giây)', 'loading');
+
+      try {
+        const response = await fetch(`${API_URL}/api/meetings/transcribe`, {
+          method: 'POST',
+          body: formData
+        });
+        const data = await response.json();
+
+        if (data.meetingId) {
+          let html = '<strong>✅ Audio đã xử lý thành công!</strong><br><br>';
+          if (data.transcript) {
+            html += '<strong>📄 Transcript:</strong><br>' + data.transcript.replace(/\n/g, '<br>') + '<br><br>';
+          }
+          if (data.summary) {
+            html += '<strong>📝 Tóm tắt:</strong><br>' + data.summary.replace(/\n/g, '<br>') + '<br><br>';
+          }
+          if (data.tasks && data.tasks.length > 0) {
+            html += '<strong>✅ Action Items:</strong><br>';
+            data.tasks.forEach(t => {
+              html += `• <strong>${t.taskName || t.task_name || JSON.stringify(t)}</strong>`;
+              if (t.assignee) html += ` — 👤 ${t.assignee}`;
+              if (t.deadline) html += ` — 📅 ${t.deadline}`;
+              html += '<br>';
+            });
+          }
+          showTestResult(html, 'success', true);
+          loadMeetings();
+        } else {
+          showTestResult('Lỗi: ' + (data.error || data.details || 'Upload failed'), 'error');
+        }
+      } catch (err) {
+        showTestResult('Lỗi upload: ' + err.message, 'error');
+      }
+    }
+
+    // ===== MEETING LIST =====
+    document.addEventListener('DOMContentLoaded', () => { loadMeetings(); });
+
+    async function loadMeetings() {
+      const meetingList = document.getElementById('meetingList');
+      meetingList.innerHTML = '<div class="loading"><div class="spinner"></div></div>';
+
+      try {
+        const response = await fetch(`${API_URL}/api/meetings`);
+        const data = await response.json();
+        const meetings = data.meetings || [];
+        updateStats(meetings);
+        renderMeetings(meetings);
+      } catch (error) {
+        meetingList.innerHTML = `<div class="empty-state"><h3>Cannot connect to server</h3><p>Make sure backend is running: cd backend && python app.py</p></div>`;
+      }
+    }
+
+    function updateStats(meetings) {
+      document.getElementById('totalMeetings').textContent = meetings.length;
+      document.getElementById('completedMeetings').textContent = meetings.filter(m => m.status === 'completed').length;
+      document.getElementById('processingMeetings').textContent = meetings.filter(m => m.status === 'processing' || m.status === 'recording').length;
+    }
+
+    function renderMeetings(meetings) {
+      const meetingList = document.getElementById('meetingList');
+      if (meetings.length === 0) {
+        meetingList.innerHTML = '<div class="empty-state"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path></svg><h3>No meetings yet</h3><p>Test AI above or use Chrome Extension</p></div>';
+        return;
+      }
+      meetingList.innerHTML = meetings.map(meeting => {
+        const statusClass = meeting.status;
+        const statusText = {'completed': 'Completed', 'processing': 'Processing', 'recording': 'Recording', 'failed': 'Failed'}[meeting.status] || meeting.status;
+        const date = new Date(meeting.createdAt);
+        const dateStr = date.toLocaleDateString('vi-VN', {year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit'});
+        const preview = meeting.summary ? meeting.summary.substring(0, 150) + '...' : meeting.transcript ? meeting.transcript.substring(0, 150) + '...' : 'No content yet';
+        return `<div class="meeting-card" onclick="openMeeting('${meeting.meetingId}')"><div class="meeting-card-header"><div><div class="meeting-title">${meeting.title || 'Untitled Meeting'}</div><div class="meeting-meta">${dateStr}</div></div><span class="meeting-status ${statusClass}">${statusText}</span></div><div class="meeting-preview">${preview}</div></div>`;
+      }).join('');
+    }
+
+    async function openMeeting(meetingId) {
+      const modal = document.getElementById('modal');
+      const modalBody = document.getElementById('modalBody');
+      const modalTitle = document.getElementById('modalTitle');
+      modal.classList.add('active');
+      modalBody.innerHTML = '<div class="loading"><div class="spinner"></div></div>';
+
+      try {
+        const response = await fetch(`${API_URL}/api/meetings/${meetingId}`);
+        const data = await response.json();
+        if (!response.ok || !data.meeting) {
+          modalBody.innerHTML = '<div class="empty-state"><p>Meeting not found (data may have been cleared after server restart)</p></div>';
+          return;
+        }
+        const meeting = data.meeting;
+        modalTitle.textContent = meeting.title || 'Untitled Meeting';
+        const date = new Date(meeting.createdAt);
+        const dateStr = date.toLocaleDateString('vi-VN', {year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit'});
+
+        let html = `<div class="detail-section"><h3>📅 Thông tin cuộc họp</h3><div class="meeting-meta">${dateStr}</div><div class="meeting-meta">Status: ${meeting.status}</div></div>`;
+
+        if (meeting.summary) {
+          html += `<div class="detail-section"><h3>📝 Tóm tắt (Summary)</h3><div class="summary-box">${meeting.summary}</div></div>`;
+        }
+        if (meeting.transcript) {
+          html += `<div class="detail-section"><h3>📄 Transcript</h3><div class="transcript-box">${meeting.transcript}</div></div>`;
+        }
+        if (meeting.tasks && meeting.tasks.length > 0) {
+          html += `<div class="detail-section"><h3>✅ Action Items</h3><div class="task-list">`;
+          html += meeting.tasks.map(task => `<div class="task-item"><div class="task-icon">✓</div><div class="task-content"><div class="task-name">${task.taskName || task.task_name || JSON.stringify(task)}</div><div class="task-meta">${task.assignee ? '👤 ' + task.assignee : ''}${task.deadline ? ' | 📅 ' + task.deadline : ''}</div></div></div>`).join('');
+          html += `</div></div>`;
+        }
+
+        modalBody.innerHTML = html;
+      } catch (error) {
+        modalBody.innerHTML = '<div class="empty-state"><p>Error loading meeting</p></div>';
+      }
+    }
+
+    function closeModal() { document.getElementById('modal').classList.remove('active'); }
+    document.getElementById('modal').addEventListener('click', (e) => { if (e.target.id === 'modal') closeModal(); });
+    document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeModal(); });
+  </script>
+</body>
+</html>
