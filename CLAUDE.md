@@ -90,5 +90,3 @@ cd backend
 python app.py
 # Server chạy tại http://localhost:3000
 ```
-
-*Nếu bạn là AI Coding Assistant, hãy luôn tham khảo tài liệu này trước khi thay đổi kiến trúc hoặc thư viện của dự án.*
